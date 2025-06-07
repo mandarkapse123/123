@@ -110,6 +110,12 @@ class NovelWriterApp {
             exportBtn.addEventListener('click', () => this.showExportModal());
         }
 
+        // Import button
+        const importBtn = document.getElementById('import-btn');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => this.showImportModal());
+        }
+
         // Search button
         const searchBtn = document.getElementById('search-btn');
         if (searchBtn) {
@@ -308,11 +314,26 @@ class NovelWriterApp {
                         <button class="btn-secondary" onclick="app.exportCurrentContent()">📝 Export Current Chapter</button>
                         <p><small>Export only what you're currently writing</small></p>
                     </div>
+
+                    <hr style="margin: 2rem 0; border: 1px solid var(--border-color);">
+
+                    <h4>📥 Import Data</h4>
+                    <div class="form-group">
+                        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                        <button class="btn-primary" onclick="document.getElementById('import-file-input').click()">📥 Import Backup (JSON)</button>
+                        <p><small>Restore your data from a previously exported JSON backup file</small></p>
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Close</button>
                 </div>
             `);
+
+            // Bind import file input
+            const importFileInput = modal.querySelector('#import-file-input');
+            if (importFileInput) {
+                importFileInput.addEventListener('change', (e) => this.handleImportFile(e));
+            }
         } catch (error) {
             console.error('Error preparing export:', error);
             alert('Error preparing export. Please try again.');
@@ -1018,6 +1039,134 @@ class NovelWriterApp {
         });
 
         console.log('Font applied:', fontName, fontFamily);
+    }
+
+    // Import Functionality
+    showImportModal() {
+        const modal = this.createModal('Import Data', `
+            <div class="import-options">
+                <div class="import-warning">
+                    <h4>⚠️ Important Notice</h4>
+                    <p><strong>Importing will replace ALL your current data!</strong></p>
+                    <p>Make sure to export your current work first if you want to keep it.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="import-file-input-modal">Select JSON Backup File:</label>
+                    <input type="file" id="import-file-input-modal" accept=".json" class="file-input">
+                </div>
+
+                <div class="import-preview" id="import-preview" style="display: none;">
+                    <h4>📊 Preview of Import Data:</h4>
+                    <div id="import-summary"></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                <button type="button" id="confirm-import-btn" class="btn-primary" disabled onclick="app.confirmImport()">Import Data</button>
+            </div>
+        `);
+
+        // Bind file input
+        const fileInput = modal.querySelector('#import-file-input-modal');
+        fileInput.addEventListener('change', (e) => this.previewImportFile(e));
+    }
+
+    async previewImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+
+            // Validate the data structure
+            if (!this.validateImportData(data)) {
+                alert('Invalid backup file format. Please select a valid StoryForge backup file.');
+                return;
+            }
+
+            // Show preview
+            this.showImportPreview(data);
+
+            // Enable import button
+            document.getElementById('confirm-import-btn').disabled = false;
+            this.importData = data; // Store for later import
+
+        } catch (error) {
+            console.error('Error reading import file:', error);
+            alert('Error reading file. Please make sure it\'s a valid JSON backup file.');
+        }
+    }
+
+    validateImportData(data) {
+        // Check if it has the expected structure
+        return data && typeof data === 'object' && (
+            data.chapters || data.characters || data.scenes ||
+            data.plotPoints || data.research || data.goals ||
+            data.timeline || data.stats
+        );
+    }
+
+    showImportPreview(data) {
+        const preview = document.getElementById('import-preview');
+        const summary = document.getElementById('import-summary');
+
+        const stats = {
+            chapters: (data.chapters || []).length,
+            scenes: (data.scenes || []).length,
+            characters: (data.characters || []).length,
+            plotPoints: (data.plotPoints || []).length,
+            research: (data.research || []).length,
+            goals: (data.goals || []).length,
+            timeline: (data.timeline || []).length
+        };
+
+        summary.innerHTML = `
+            <div class="import-stats">
+                <div class="stat-item">📖 Chapters: ${stats.chapters}</div>
+                <div class="stat-item">🎬 Scenes: ${stats.scenes}</div>
+                <div class="stat-item">👥 Characters: ${stats.characters}</div>
+                <div class="stat-item">📋 Plot Points: ${stats.plotPoints}</div>
+                <div class="stat-item">📚 Research Notes: ${stats.research}</div>
+                <div class="stat-item">🎯 Goals: ${stats.goals}</div>
+                <div class="stat-item">📅 Timeline Events: ${stats.timeline}</div>
+            </div>
+        `;
+
+        preview.style.display = 'block';
+    }
+
+    async confirmImport() {
+        if (!this.importData) return;
+
+        const confirmed = confirm(
+            'This will replace ALL your current data with the imported data. ' +
+            'Are you absolutely sure you want to continue?\n\n' +
+            'This action cannot be undone!'
+        );
+
+        if (!confirmed) return;
+
+        try {
+            // Import new data
+            await storage.importData(this.importData);
+
+            // Close modal
+            document.querySelector('.modal-overlay')?.remove();
+
+            // Show success message
+            this.showNotification('Data imported successfully! Refreshing page...', 'success');
+
+            // Refresh the page to reload all components with new data
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+
+        } catch (error) {
+            console.error('Error importing data:', error);
+            alert('Error importing data. Please try again.');
+        }
     }
 
     downloadFile(content, filename, mimeType) {

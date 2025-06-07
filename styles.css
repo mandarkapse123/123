@@ -1835,3 +1835,71 @@ body.focus-mode #main-editor {
     gap: 1rem;
     justify-content: flex-end;
 }
+
+/* Import Modal Styles */
+.import-options {
+    margin-bottom: 2rem;
+}
+
+.import-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border: 1px solid var(--warning-color);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.import-warning h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--warning-color);
+}
+
+.import-warning p {
+    margin: 0.25rem 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.file-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px dashed var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-input:hover {
+    border-color: var(--accent-color);
+    background-color: var(--bg-tertiary);
+}
+
+.import-preview {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.import-preview h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.import-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+}
+
+.stat-item {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
