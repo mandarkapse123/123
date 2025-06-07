@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novel Writer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav id="main-nav" class="nav-bar">
+            <div class="nav-brand">
+                <h1>📖 Novel Writer</h1>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-btn active" data-view="writer">Write</button>
+                <button class="nav-btn" data-view="organizer">Organize</button>
+                <button class="nav-btn" data-view="characters">Characters</button>
+                <button class="nav-btn" data-view="outline">Outline</button>
+                <button class="nav-btn" data-view="goals">Goals</button>
+                <button class="nav-btn" data-view="research">Research</button>
+                <button class="nav-btn" data-view="timeline">Timeline</button>
+                <button class="nav-btn" data-view="stats">Stats</button>
+            </div>
+            <div class="nav-controls">
+                <button id="theme-toggle" class="icon-btn" title="Toggle Theme">🌙</button>
+                <button id="focus-mode" class="icon-btn" title="Focus Mode">🎯</button>
+                <button id="export-btn" class="icon-btn" title="Export">📤</button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Writer View -->
+            <div id="writer-view" class="view active">
+                <div class="writer-container">
+                    <div class="writer-header">
+                        <select id="chapter-select" class="chapter-selector">
+                            <option value="">Select Chapter</option>
+                        </select>
+                        <select id="scene-select" class="scene-selector">
+                            <option value="">Select Scene</option>
+                        </select>
+                        <div class="writer-stats">
+                            <span id="word-count">0 words</span>
+                            <span id="char-count">0 chars</span>
+                            <span id="session-words">Session: 0</span>
+                        </div>
+                    </div>
+                    <div class="writing-area">
+                        <textarea id="main-editor" placeholder="Start writing your story..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organizer View -->
+            <div id="organizer-view" class="view">
+                <div class="organizer-container">
+                    <div class="organizer-header">
+                        <h2>Project Structure</h2>
+                        <button id="add-chapter" class="btn-primary">+ Add Chapter</button>
+                    </div>
+                    <div class="project-tree" id="project-tree">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Characters View -->
+            <div id="characters-view" class="view">
+                <div class="characters-container">
+                    <div class="characters-header">
+                        <h2>Characters</h2>
+                        <button id="add-character" class="btn-primary">+ Add Character</button>
+                    </div>
+                    <div class="characters-grid" id="characters-grid">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Outline View -->
+            <div id="outline-view" class="view">
+                <div class="outline-container">
+                    <div class="outline-header">
+                        <h2>Plot Outline</h2>
+                        <button id="add-plot-point" class="btn-primary">+ Add Plot Point</button>
+                    </div>
+                    <div class="outline-board" id="outline-board">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goals View -->
+            <div id="goals-view" class="view">
+                <div class="goals-container">
+                    <div class="goals-header">
+                        <h2>Writing Goals</h2>
+                        <button id="add-goal" class="btn-primary">+ Add Goal</button>
+                    </div>
+                    <div class="goals-dashboard" id="goals-dashboard">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Research View -->
+            <div id="research-view" class="view">
+                <div class="research-container">
+                    <div class="research-header">
+                        <h2>Research Notes</h2>
+                        <button id="add-research" class="btn-primary">+ Add Note</button>
+                    </div>
+                    <div class="research-grid" id="research-grid">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline View -->
+            <div id="timeline-view" class="view">
+                <div class="timeline-container">
+                    <div class="timeline-header">
+                        <h2>Story Timeline</h2>
+                        <button id="add-event" class="btn-primary">+ Add Event</button>
+                    </div>
+                    <div class="timeline-board" id="timeline-board">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats View -->
+            <div id="stats-view" class="view">
+                <div class="stats-container">
+                    <div class="stats-header">
+                        <h2>Writing Statistics</h2>
+                    </div>
+                    <div class="stats-dashboard" id="stats-dashboard">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- Scripts -->
+    <script src="storage.js"></script>
+    <script src="components/writer.js"></script>
+    <script src="components/organizer.js"></script>
+    <script src="components/characters.js"></script>
+    <script src="components/outline.js"></script>
+    <script src="components/goals.js"></script>
+    <script src="components/research.js"></script>
+    <script src="components/timeline.js"></script>
+    <script src="components/stats.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
