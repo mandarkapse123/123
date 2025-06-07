@@ -17,6 +17,10 @@
         <nav id="main-nav" class="nav-bar">
             <div class="nav-brand">
                 <h1>✍️ StoryForge</h1>
+                <div class="book-title" id="book-title-display">
+                    <span id="book-title-text">Click to set book title</span>
+                    <button id="edit-book-title" class="edit-title-btn" title="Edit Book Title">✏️</button>
+                </div>
             </div>
             <div class="nav-menu">
                 <button class="nav-btn active" data-view="writer">Write</button>
@@ -152,41 +156,19 @@
                     <div class="ideas-header">
                         <h2>💡 Ideas & Notes</h2>
                         <div class="ideas-controls">
-                            <button id="clear-ideas" class="btn-secondary">Clear All</button>
-                            <button id="save-ideas" class="btn-primary">Save Ideas</button>
+                            <button id="export-ideas" class="btn-secondary">📤 Export</button>
+                            <button id="clear-ideas" class="btn-secondary">🗑️ Clear</button>
+                            <div class="ideas-stats">
+                                <span id="ideas-word-count">0 words</span>
+                                <span id="ideas-save-status">Auto-saved</span>
+                            </div>
                         </div>
                     </div>
                     <div class="ideas-workspace">
-                        <div class="ideas-sidebar">
-                            <h4>📝 Quick Notes</h4>
-                            <div class="quick-notes">
-                                <div class="note-item">
-                                    <strong>💡 Story Ideas:</strong>
-                                    <p>Jot down plot twists, character backstories, or "what if" scenarios</p>
-                                </div>
-                                <div class="note-item">
-                                    <strong>🎭 Character Ideas:</strong>
-                                    <p>Names, quirks, dialogue snippets, or personality traits</p>
-                                </div>
-                                <div class="note-item">
-                                    <strong>🌍 World Building:</strong>
-                                    <p>Settings, rules, history, or cultural details</p>
-                                </div>
-                                <div class="note-item">
-                                    <strong>📋 To-Do:</strong>
-                                    <p>Research tasks, plot holes to fix, or scenes to write</p>
-                                </div>
-                                <div class="note-item">
-                                    <strong>✨ Inspiration:</strong>
-                                    <p>Quotes, images, songs, or anything that sparks creativity</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ideas-editor">
-                            <textarea id="ideas-textarea" placeholder="💭 Brain dump your ideas here...
+                        <div class="ideas-main">
+                            <textarea id="ideas-textarea" placeholder="💭 Your creative playground...
 
-This is your creative playground! Use this space for:
-
+This is your space for:
 • Random story ideas and plot twists
 • Character names and personality notes
 • Dialogue snippets you want to remember
@@ -196,9 +178,27 @@ This is your creative playground! Use this space for:
 • Plot holes you need to fix
 • Scene ideas for later chapters
 
-No structure needed - just let your creativity flow! ✨
-
-Everything auto-saves so you never lose a brilliant idea."></textarea>
+No structure needed - just let your creativity flow! ✨"></textarea>
+                        </div>
+                        <div class="ideas-sidebar">
+                            <h4>📝 Quick Ideas</h4>
+                            <div class="quick-notes">
+                                <button class="note-template" data-template="story">💡 Story Idea</button>
+                                <button class="note-template" data-template="character">🎭 Character</button>
+                                <button class="note-template" data-template="dialogue">💬 Dialogue</button>
+                                <button class="note-template" data-template="scene">🎬 Scene</button>
+                                <button class="note-template" data-template="research">📚 Research</button>
+                                <button class="note-template" data-template="todo">📋 To-Do</button>
+                            </div>
+                            <div class="ideas-tips">
+                                <h5>💡 Tips:</h5>
+                                <ul>
+                                    <li>Use templates above for quick starts</li>
+                                    <li>Everything auto-saves as you type</li>
+                                    <li>Perfect for copy-paste inspiration</li>
+                                    <li>No formatting needed - just write!</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -278,6 +278,31 @@ Everything auto-saves so you never lose a brilliant idea."></textarea>
                 <button class="btn-secondary" onclick="app.closeSessionModal()">Cancel</button>
                 <button class="btn-primary" onclick="app.startWritingSession()">Start Session</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Book Title Modal -->
+    <div id="book-title-modal" class="book-title-modal hidden">
+        <div class="book-title-container">
+            <h3>📖 Set Your Book Title</h3>
+            <form id="book-title-form">
+                <div class="form-group">
+                    <label for="book-title-input">Book Title</label>
+                    <input type="text" id="book-title-input" placeholder="Enter your book title..." maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="book-subtitle-input">Subtitle (Optional)</label>
+                    <input type="text" id="book-subtitle-input" placeholder="Enter subtitle..." maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label for="book-author-input">Author</label>
+                    <input type="text" id="book-author-input" placeholder="Your name..." maxlength="50">
+                </div>
+                <div class="book-title-actions">
+                    <button type="button" class="btn-secondary" onclick="app.closeBookTitleModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Title</button>
+                </div>
+            </form>
         </div>
     </div>
 

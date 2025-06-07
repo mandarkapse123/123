@@ -122,6 +122,19 @@ class NovelWriterApp {
             fontToggle.addEventListener('click', () => this.showFontModal());
         }
 
+        // Book title elements
+        const bookTitleDisplay = document.getElementById('book-title-display');
+        const editBookTitleBtn = document.getElementById('edit-book-title');
+        if (bookTitleDisplay) {
+            bookTitleDisplay.addEventListener('click', () => this.showBookTitleModal());
+        }
+        if (editBookTitleBtn) {
+            editBookTitleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showBookTitleModal();
+            });
+        }
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
 
@@ -168,6 +181,9 @@ class NovelWriterApp {
             // Load font preference
             const savedFont = await storage.getSetting('writingFont', 'georgia');
             this.setFont(savedFont);
+
+            // Load book title
+            await this.loadBookTitle();
         } catch (error) {
             console.error('Error loading theme:', error);
             this.setTheme('light');
@@ -843,26 +859,115 @@ class NovelWriterApp {
         }
     }
 
+    // Book Title Management
+    async loadBookTitle() {
+        try {
+            const bookTitle = await storage.getSetting('bookTitle', '');
+            const bookSubtitle = await storage.getSetting('bookSubtitle', '');
+            const bookAuthor = await storage.getSetting('bookAuthor', '');
+
+            this.updateBookTitleDisplay(bookTitle, bookSubtitle, bookAuthor);
+        } catch (error) {
+            console.error('Error loading book title:', error);
+        }
+    }
+
+    updateBookTitleDisplay(title, subtitle, author) {
+        const bookTitleText = document.getElementById('book-title-text');
+        if (!bookTitleText) return;
+
+        if (title) {
+            let displayText = title;
+            if (subtitle) displayText += `: ${subtitle}`;
+            if (author) displayText += ` by ${author}`;
+            bookTitleText.textContent = displayText;
+            bookTitleText.style.fontStyle = 'normal';
+            bookTitleText.style.color = 'var(--text-primary)';
+        } else {
+            bookTitleText.textContent = 'Click to set book title';
+            bookTitleText.style.fontStyle = 'italic';
+            bookTitleText.style.color = 'var(--text-secondary)';
+        }
+    }
+
+    showBookTitleModal() {
+        const modal = document.getElementById('book-title-modal');
+        const form = document.getElementById('book-title-form');
+
+        // Load current values
+        storage.getSetting('bookTitle', '').then(title => {
+            document.getElementById('book-title-input').value = title;
+        });
+        storage.getSetting('bookSubtitle', '').then(subtitle => {
+            document.getElementById('book-subtitle-input').value = subtitle;
+        });
+        storage.getSetting('bookAuthor', '').then(author => {
+            document.getElementById('book-author-input').value = author;
+        });
+
+        modal.classList.remove('hidden');
+        document.getElementById('book-title-input').focus();
+
+        // Bind form submit
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            this.saveBookTitle();
+        };
+    }
+
+    closeBookTitleModal() {
+        const modal = document.getElementById('book-title-modal');
+        modal.classList.add('hidden');
+    }
+
+    async saveBookTitle() {
+        const title = document.getElementById('book-title-input').value.trim();
+        const subtitle = document.getElementById('book-subtitle-input').value.trim();
+        const author = document.getElementById('book-author-input').value.trim();
+
+        try {
+            await storage.setSetting('bookTitle', title);
+            await storage.setSetting('bookSubtitle', subtitle);
+            await storage.setSetting('bookAuthor', author);
+
+            this.updateBookTitleDisplay(title, subtitle, author);
+            this.closeBookTitleModal();
+            this.showNotification('Book title saved!', 'success');
+        } catch (error) {
+            console.error('Error saving book title:', error);
+            this.showNotification('Error saving book title', 'error');
+        }
+    }
+
     // Font Management
     showFontModal() {
         const fontModal = document.getElementById('font-modal');
+        if (!fontModal) {
+            console.error('Font modal not found');
+            return;
+        }
+
         fontModal.classList.remove('hidden');
 
-        // Highlight current font
-        const currentFont = document.documentElement.style.getPropertyValue('--writing-font') || 'georgia';
-        const fontOptions = document.querySelectorAll('.font-option');
-        fontOptions.forEach(option => {
-            option.classList.remove('selected');
-            if (option.dataset.font === currentFont.replace(/['"]/g, '').split(',')[0].toLowerCase()) {
-                option.classList.add('selected');
-            }
-        });
+        // Get current font
+        storage.getSetting('writingFont', 'georgia').then(currentFont => {
+            const fontOptions = document.querySelectorAll('.font-option');
+            fontOptions.forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.font === currentFont) {
+                    option.classList.add('selected');
+                }
 
-        // Bind click events
-        fontOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                fontOptions.forEach(opt => opt.classList.remove('selected'));
-                option.classList.add('selected');
+                // Remove existing click listeners and add new ones
+                option.replaceWith(option.cloneNode(true));
+            });
+
+            // Re-bind click events after cloning
+            document.querySelectorAll('.font-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.font-option').forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                });
             });
         });
     }
@@ -900,13 +1005,19 @@ class NovelWriterApp {
         };
 
         const fontFamily = fontMap[fontName] || fontMap['georgia'];
+
+        // Apply to CSS custom property
         document.documentElement.style.setProperty('--writing-font', fontFamily);
 
-        // Apply to all writing areas
+        // Apply directly to writing elements
         const writingElements = document.querySelectorAll('#main-editor, #ideas-textarea');
         writingElements.forEach(element => {
-            element.style.fontFamily = fontFamily;
+            if (element) {
+                element.style.fontFamily = fontFamily;
+            }
         });
+
+        console.log('Font applied:', fontName, fontFamily);
     }
 
     downloadFile(content, filename, mimeType) {
