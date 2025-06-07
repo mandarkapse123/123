@@ -231,17 +231,43 @@ class NovelWriterApp {
     async showExportModal() {
         try {
             const data = await storage.exportData();
-            
-            const modal = this.createModal('Export Data', `
+            const chapters = data.chapters || [];
+            const totalWords = this.calculateTotalWords(chapters, data.scenes || []);
+
+            const modal = this.createModal('Export Your Novel', `
                 <div class="export-options">
-                    <h4>Export Options</h4>
-                    <div class="form-group">
-                        <button class="btn-primary" onclick="app.exportAsJSON()">Export as JSON</button>
-                        <p><small>Download all your data as a JSON file for backup or transfer</small></p>
+                    <div class="export-summary">
+                        <h4>📊 Your Novel Summary</h4>
+                        <p><strong>Chapters:</strong> ${chapters.length}</p>
+                        <p><strong>Total Words:</strong> ${totalWords.toLocaleString()}</p>
+                        <p><strong>Characters:</strong> ${(data.characters || []).length}</p>
                     </div>
+
+                    <h4>📤 Export Options</h4>
+
                     <div class="form-group">
-                        <button class="btn-secondary" onclick="app.exportCurrentContent()">Export Current Writing</button>
-                        <p><small>Export only the current chapter/scene as a text file</small></p>
+                        <button class="btn-primary" onclick="app.exportAsCompleteNovel()">📖 Export Complete Novel</button>
+                        <p><small>Download your entire novel as a formatted text file</small></p>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn-primary" onclick="app.exportAsPDF()">📄 Export as PDF</button>
+                        <p><small>Generate a PDF version of your novel (requires internet)</small></p>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="app.exportAsZip()">🗜️ Export as ZIP Package</button>
+                        <p><small>Download everything as a ZIP file with separate chapter files</small></p>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="app.exportAsJSON()">💾 Export Data Backup (JSON)</button>
+                        <p><small>Technical backup file - can be imported back into the app</small></p>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="app.exportCurrentContent()">📝 Export Current Chapter</button>
+                        <p><small>Export only what you're currently writing</small></p>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -276,12 +302,306 @@ class NovelWriterApp {
         }
     }
 
+    calculateTotalWords(chapters, scenes) {
+        let totalWords = 0;
+
+        // Count words in chapters
+        chapters.forEach(chapter => {
+            if (chapter.content) {
+                const words = chapter.content.trim().split(/\s+/).length;
+                totalWords += chapter.content.trim() ? words : 0;
+            }
+        });
+
+        // Count words in scenes
+        scenes.forEach(scene => {
+            if (scene.content) {
+                const words = scene.content.trim().split(/\s+/).length;
+                totalWords += scene.content.trim() ? words : 0;
+            }
+        });
+
+        return totalWords;
+    }
+
+    async exportAsCompleteNovel() {
+        try {
+            const data = await storage.exportData();
+            const chapters = data.chapters || [];
+            const scenes = data.scenes || [];
+
+            let novelText = `MY NOVEL\n`;
+            novelText += `Generated on ${new Date().toLocaleDateString()}\n`;
+            novelText += `Total Chapters: ${chapters.length}\n`;
+            novelText += `Total Words: ${this.calculateTotalWords(chapters, scenes).toLocaleString()}\n\n`;
+            novelText += `${'='.repeat(50)}\n\n`;
+
+            // Sort chapters by order
+            chapters.sort((a, b) => a.order - b.order);
+
+            for (const chapter of chapters) {
+                novelText += `CHAPTER ${chapter.order + 1}: ${chapter.title.toUpperCase()}\n\n`;
+
+                if (chapter.content) {
+                    novelText += chapter.content + '\n\n';
+                }
+
+                // Add scenes for this chapter
+                const chapterScenes = scenes.filter(s => s.chapterId === chapter.id).sort((a, b) => a.order - b.order);
+                for (const scene of chapterScenes) {
+                    if (scene.content) {
+                        novelText += `--- ${scene.title} ---\n\n`;
+                        novelText += scene.content + '\n\n';
+                    }
+                }
+
+                novelText += `${'='.repeat(50)}\n\n`;
+            }
+
+            this.downloadFile(novelText, 'my-novel.txt', 'text/plain');
+            document.querySelector('.modal-overlay')?.remove();
+        } catch (error) {
+            console.error('Error exporting novel:', error);
+            alert('Error exporting novel. Please try again.');
+        }
+    }
+
+    async exportAsPDF() {
+        try {
+            // Check if we can use the browser's print to PDF
+            const data = await storage.exportData();
+            const chapters = data.chapters || [];
+            const scenes = data.scenes || [];
+
+            // Create a new window with formatted content
+            const printWindow = window.open('', '_blank');
+            let htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>My Novel</title>
+                    <style>
+                        body { font-family: 'Times New Roman', serif; line-height: 1.6; margin: 2cm; }
+                        h1 { text-align: center; font-size: 24px; margin-bottom: 2cm; }
+                        h2 { font-size: 18px; margin-top: 2cm; margin-bottom: 1cm; page-break-before: always; }
+                        h3 { font-size: 16px; margin-top: 1cm; margin-bottom: 0.5cm; }
+                        p { margin-bottom: 1em; text-align: justify; }
+                        .stats { text-align: center; margin-bottom: 2cm; font-style: italic; }
+                        @media print { body { margin: 1cm; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>MY NOVEL</h1>
+                    <div class="stats">
+                        Generated on ${new Date().toLocaleDateString()}<br>
+                        ${chapters.length} Chapters • ${this.calculateTotalWords(chapters, scenes).toLocaleString()} Words
+                    </div>
+            `;
+
+            chapters.sort((a, b) => a.order - b.order);
+
+            for (const chapter of chapters) {
+                htmlContent += `<h2>Chapter ${chapter.order + 1}: ${chapter.title}</h2>`;
+
+                if (chapter.content) {
+                    const paragraphs = chapter.content.split('\n\n');
+                    paragraphs.forEach(para => {
+                        if (para.trim()) {
+                            htmlContent += `<p>${para.trim()}</p>`;
+                        }
+                    });
+                }
+
+                const chapterScenes = scenes.filter(s => s.chapterId === chapter.id).sort((a, b) => a.order - b.order);
+                for (const scene of chapterScenes) {
+                    if (scene.content) {
+                        htmlContent += `<h3>${scene.title}</h3>`;
+                        const paragraphs = scene.content.split('\n\n');
+                        paragraphs.forEach(para => {
+                            if (para.trim()) {
+                                htmlContent += `<p>${para.trim()}</p>`;
+                            }
+                        });
+                    }
+                }
+            }
+
+            htmlContent += '</body></html>';
+
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+
+            // Wait a moment then trigger print dialog
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+
+            document.querySelector('.modal-overlay')?.remove();
+        } catch (error) {
+            console.error('Error creating PDF:', error);
+            alert('Error creating PDF. Please try again.');
+        }
+    }
+
     exportCurrentContent() {
         if (this.components.writer) {
             this.components.writer.exportCurrentContent();
             // Close modal
             document.querySelector('.modal-overlay')?.remove();
         }
+    }
+
+    async exportAsZip() {
+        try {
+            if (typeof JSZip === 'undefined') {
+                alert('ZIP functionality requires internet connection. Please try again when online.');
+                return;
+            }
+
+            const data = await storage.exportData();
+            const zip = new JSZip();
+
+            // Create folders
+            const chaptersFolder = zip.folder("chapters");
+            const dataFolder = zip.folder("data");
+
+            // Add complete novel
+            const chapters = data.chapters || [];
+            const scenes = data.scenes || [];
+            let completeNovel = this.generateCompleteNovelText(chapters, scenes);
+            zip.file("complete-novel.txt", completeNovel);
+
+            // Add individual chapters
+            chapters.sort((a, b) => a.order - b.order);
+            for (const chapter of chapters) {
+                let chapterText = `${chapter.title}\n${'='.repeat(chapter.title.length)}\n\n`;
+
+                if (chapter.content) {
+                    chapterText += chapter.content + '\n\n';
+                }
+
+                // Add scenes
+                const chapterScenes = scenes.filter(s => s.chapterId === chapter.id).sort((a, b) => a.order - b.order);
+                for (const scene of chapterScenes) {
+                    if (scene.content) {
+                        chapterText += `--- ${scene.title} ---\n\n${scene.content}\n\n`;
+                    }
+                }
+
+                chaptersFolder.file(`chapter-${chapter.order + 1}-${chapter.title.replace(/[^a-zA-Z0-9]/g, '-')}.txt`, chapterText);
+            }
+
+            // Add character profiles
+            if (data.characters && data.characters.length > 0) {
+                let charactersText = "CHARACTER PROFILES\n==================\n\n";
+                data.characters.forEach(char => {
+                    charactersText += `${char.name}\n${'-'.repeat(char.name.length)}\n`;
+                    if (char.role) charactersText += `Role: ${char.role}\n`;
+                    if (char.age) charactersText += `Age: ${char.age}\n`;
+                    if (char.description) charactersText += `Description: ${char.description}\n`;
+                    if (char.appearance) charactersText += `Appearance: ${char.appearance}\n`;
+                    if (char.personality) charactersText += `Personality: ${char.personality}\n`;
+                    if (char.background) charactersText += `Background: ${char.background}\n`;
+                    if (char.goals) charactersText += `Goals: ${char.goals}\n`;
+                    if (char.relationships) charactersText += `Relationships: ${char.relationships}\n`;
+                    if (char.notes) charactersText += `Notes: ${char.notes}\n`;
+                    charactersText += '\n' + '='.repeat(50) + '\n\n';
+                });
+                dataFolder.file("characters.txt", charactersText);
+            }
+
+            // Add plot outline
+            if (data.plotPoints && data.plotPoints.length > 0) {
+                let outlineText = "PLOT OUTLINE\n============\n\n";
+                data.plotPoints.sort((a, b) => a.order - b.order).forEach(point => {
+                    outlineText += `${point.title} (${point.type})\n`;
+                    if (point.description) outlineText += `${point.description}\n`;
+                    if (point.characters) outlineText += `Characters: ${point.characters}\n`;
+                    if (point.location) outlineText += `Location: ${point.location}\n`;
+                    if (point.notes) outlineText += `Notes: ${point.notes}\n`;
+                    outlineText += '\n' + '-'.repeat(30) + '\n\n';
+                });
+                dataFolder.file("plot-outline.txt", outlineText);
+            }
+
+            // Add research notes
+            if (data.research && data.research.length > 0) {
+                let researchText = "RESEARCH NOTES\n==============\n\n";
+                data.research.forEach(note => {
+                    researchText += `${note.title}\n${'-'.repeat(note.title.length)}\n`;
+                    if (note.category) researchText += `Category: ${note.category}\n`;
+                    if (note.source) researchText += `Source: ${note.source}\n`;
+                    if (note.url) researchText += `URL: ${note.url}\n`;
+                    researchText += `\n${note.content}\n\n`;
+                    if (note.tags) researchText += `Tags: ${note.tags}\n`;
+                    researchText += '\n' + '='.repeat(50) + '\n\n';
+                });
+                dataFolder.file("research-notes.txt", researchText);
+            }
+
+            // Add backup JSON
+            dataFolder.file("backup-data.json", JSON.stringify(data, null, 2));
+
+            // Generate and download ZIP
+            const zipBlob = await zip.generateAsync({type: "blob"});
+            const url = URL.createObjectURL(zipBlob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `my-novel-${new Date().toISOString().split('T')[0]}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            document.querySelector('.modal-overlay')?.remove();
+        } catch (error) {
+            console.error('Error creating ZIP:', error);
+            alert('Error creating ZIP file. Please try again.');
+        }
+    }
+
+    generateCompleteNovelText(chapters, scenes) {
+        let novelText = `MY NOVEL\n`;
+        novelText += `Generated on ${new Date().toLocaleDateString()}\n`;
+        novelText += `Total Chapters: ${chapters.length}\n`;
+        novelText += `Total Words: ${this.calculateTotalWords(chapters, scenes).toLocaleString()}\n\n`;
+        novelText += `${'='.repeat(50)}\n\n`;
+
+        chapters.sort((a, b) => a.order - b.order);
+
+        for (const chapter of chapters) {
+            novelText += `CHAPTER ${chapter.order + 1}: ${chapter.title.toUpperCase()}\n\n`;
+
+            if (chapter.content) {
+                novelText += chapter.content + '\n\n';
+            }
+
+            const chapterScenes = scenes.filter(s => s.chapterId === chapter.id).sort((a, b) => a.order - b.order);
+            for (const scene of chapterScenes) {
+                if (scene.content) {
+                    novelText += `--- ${scene.title} ---\n\n`;
+                    novelText += scene.content + '\n\n';
+                }
+            }
+
+            novelText += `${'='.repeat(50)}\n\n`;
+        }
+
+        return novelText;
+    }
+
+    downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
     createModal(title, content) {

@@ -1004,6 +1004,47 @@ body.focus-mode #main-editor {
     color: var(--text-muted);
 }
 
+/* Export Modal Styles */
+.export-summary {
+    background-color: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.export-summary h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.export-summary p {
+    margin: 0.25rem 0;
+    color: var(--text-secondary);
+}
+
+.export-options .form-group {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--bg-secondary);
+}
+
+.export-options .form-group:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.export-options button {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.export-options small {
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
 /* Empty State */
 .empty-state {
     text-align: center;
