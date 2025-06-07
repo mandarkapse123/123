@@ -412,6 +412,214 @@ body.focus-mode #main-editor {
     }
 }
 
+/* Tree Styles (Organizer) */
+.tree-item {
+    margin-bottom: 0.5rem;
+}
+
+.tree-node {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.tree-node:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.node-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.node-icon {
+    font-size: 1.2rem;
+}
+
+.node-title {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.node-stats {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.node-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.action-btn {
+    padding: 0.25rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.tree-children {
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+}
+
+.scene-item .tree-node {
+    background-color: var(--bg-secondary);
+}
+
+/* Character Card Styles */
+.character-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.character-header h3 {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.character-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.character-info p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.character-details {
+    margin-top: 1rem;
+}
+
+.detail-section {
+    margin-bottom: 0.75rem;
+}
+
+.detail-section strong {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.detail-section p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.character-notes {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.character-notes strong {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.character-notes p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Plot Outline Styles */
+.act-section {
+    margin-bottom: 2rem;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.act-header {
+    background-color: var(--bg-tertiary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.act-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.plot-points-list {
+    padding: 1rem;
+}
+
+.plot-point {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.plot-point-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.plot-point-type {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-color);
+}
+
+.plot-point-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.plot-point-content {
+    padding: 1rem;
+}
+
+.plot-point-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.plot-point-content p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.plot-characters, .plot-location, .plot-notes {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.plot-characters strong, .plot-location strong, .plot-notes strong {
+    color: var(--text-primary);
+}
+
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 8px;
@@ -428,4 +636,360 @@ body.focus-mode #main-editor {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--text-muted);
+}
+
+/* Goals Styles */
+.goal-card {
+    position: relative;
+}
+
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.goal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.goal-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.goal-info p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.goal-progress {
+    margin: 1rem 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--accent-color);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.goal-description {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.goal-status {
+    padding: 0.5rem;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.goal-status.complete {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.goal-status.overdue {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.goal-status.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Research Styles */
+.research-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.research-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.research-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.research-category {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.research-info p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.research-info a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.research-info a:hover {
+    text-decoration: underline;
+}
+
+.research-content {
+    margin: 1rem 0;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.research-tags {
+    margin: 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.research-meta {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Timeline Styles */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--border-color);
+}
+
+.timeline-event {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -2rem;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    border: 2px solid var(--bg-primary);
+}
+
+.timeline-content {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.event-header h4 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.event-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.event-date {
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.event-description {
+    margin: 0.5rem 0;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.event-characters, .event-location, .event-notes {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.event-importance {
+    margin: 0.5rem 0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.importance-low {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.importance-medium {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.importance-high {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.importance-critical {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* Stats Styles */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+.stat-content h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.chart-card {
+    grid-column: span 2;
+}
+
+.chart-container {
+    margin-top: 1rem;
+}
+
+.simple-chart {
+    display: flex;
+    align-items: end;
+    gap: 4px;
+    height: 150px;
+    padding: 1rem 0;
+}
+
+.chart-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.bar {
+    width: 100%;
+    min-height: 4px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.bar.sessions {
+    background-color: var(--success-color);
+}
+
+.bar:hover {
+    opacity: 0.8;
+}
+
+.bar-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    margin: 0;
 }
