@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novel Writer</title>
+    <title>StoryForge</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Source+Sans+Pro:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#2c3e50">
 </head>
 <body>
@@ -13,7 +16,7 @@
         <!-- Navigation -->
         <nav id="main-nav" class="nav-bar">
             <div class="nav-brand">
-                <h1>📖 Novel Writer</h1>
+                <h1>✍️ StoryForge</h1>
             </div>
             <div class="nav-menu">
                 <button class="nav-btn active" data-view="writer">Write</button>
@@ -22,10 +25,12 @@
                 <button class="nav-btn" data-view="outline">Outline</button>
                 <button class="nav-btn" data-view="goals">Goals</button>
                 <button class="nav-btn" data-view="research">Research</button>
+                <button class="nav-btn" data-view="ideas">Ideas</button>
                 <button class="nav-btn" data-view="timeline">Timeline</button>
                 <button class="nav-btn" data-view="stats">Stats</button>
             </div>
             <div class="nav-controls">
+                <button id="font-toggle" class="icon-btn" title="Change Font">🎨</button>
                 <button id="search-btn" class="icon-btn" title="Global Search">🔍</button>
                 <button id="theme-toggle" class="icon-btn" title="Toggle Theme">🌙</button>
                 <button id="focus-mode" class="icon-btn" title="Focus Mode">🎯</button>
@@ -141,6 +146,64 @@
                 </div>
             </div>
 
+            <!-- Ideas View -->
+            <div id="ideas-view" class="view">
+                <div class="ideas-container">
+                    <div class="ideas-header">
+                        <h2>💡 Ideas & Notes</h2>
+                        <div class="ideas-controls">
+                            <button id="clear-ideas" class="btn-secondary">Clear All</button>
+                            <button id="save-ideas" class="btn-primary">Save Ideas</button>
+                        </div>
+                    </div>
+                    <div class="ideas-workspace">
+                        <div class="ideas-sidebar">
+                            <h4>📝 Quick Notes</h4>
+                            <div class="quick-notes">
+                                <div class="note-item">
+                                    <strong>💡 Story Ideas:</strong>
+                                    <p>Jot down plot twists, character backstories, or "what if" scenarios</p>
+                                </div>
+                                <div class="note-item">
+                                    <strong>🎭 Character Ideas:</strong>
+                                    <p>Names, quirks, dialogue snippets, or personality traits</p>
+                                </div>
+                                <div class="note-item">
+                                    <strong>🌍 World Building:</strong>
+                                    <p>Settings, rules, history, or cultural details</p>
+                                </div>
+                                <div class="note-item">
+                                    <strong>📋 To-Do:</strong>
+                                    <p>Research tasks, plot holes to fix, or scenes to write</p>
+                                </div>
+                                <div class="note-item">
+                                    <strong>✨ Inspiration:</strong>
+                                    <p>Quotes, images, songs, or anything that sparks creativity</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ideas-editor">
+                            <textarea id="ideas-textarea" placeholder="💭 Brain dump your ideas here...
+
+This is your creative playground! Use this space for:
+
+• Random story ideas and plot twists
+• Character names and personality notes
+• Dialogue snippets you want to remember
+• Copy-paste inspiration from anywhere
+• Quick notes while reading/researching
+• Stream of consciousness writing
+• Plot holes you need to fix
+• Scene ideas for later chapters
+
+No structure needed - just let your creativity flow! ✨
+
+Everything auto-saves so you never lose a brilliant idea."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Timeline View -->
             <div id="timeline-view" class="view">
                 <div class="timeline-container">
@@ -218,6 +281,61 @@
         </div>
     </div>
 
+    <!-- Font Selection Modal -->
+    <div id="font-modal" class="font-modal hidden">
+        <div class="font-container">
+            <h3>🎨 Choose Your Writing Font</h3>
+            <div class="font-options">
+                <div class="font-option" data-font="georgia">
+                    <div class="font-preview" style="font-family: Georgia, serif;">
+                        <h4>Georgia (Default)</h4>
+                        <p>The quick brown fox jumps over the lazy dog. This is a classic serif font perfect for traditional novel writing.</p>
+                    </div>
+                </div>
+                <div class="font-option" data-font="times">
+                    <div class="font-preview" style="font-family: 'Times New Roman', serif;">
+                        <h4>Times New Roman</h4>
+                        <p>The quick brown fox jumps over the lazy dog. A traditional serif font used in many published books.</p>
+                    </div>
+                </div>
+                <div class="font-option" data-font="libre">
+                    <div class="font-preview" style="font-family: 'Libre Baskerville', serif;">
+                        <h4>Libre Baskerville</h4>
+                        <p>The quick brown fox jumps over the lazy dog. A modern serif font with excellent readability.</p>
+                    </div>
+                </div>
+                <div class="font-option" data-font="crimson">
+                    <div class="font-preview" style="font-family: 'Crimson Text', serif;">
+                        <h4>Crimson Text</h4>
+                        <p>The quick brown fox jumps over the lazy dog. An elegant serif font inspired by classic book typography.</p>
+                    </div>
+                </div>
+                <div class="font-option" data-font="inter">
+                    <div class="font-preview" style="font-family: 'Inter', sans-serif;">
+                        <h4>Inter (Modern)</h4>
+                        <p>The quick brown fox jumps over the lazy dog. A clean, modern sans-serif font for contemporary writing.</p>
+                    </div>
+                </div>
+                <div class="font-option" data-font="source">
+                    <div class="font-preview" style="font-family: 'Source Sans Pro', sans-serif;">
+                        <h4>Source Sans Pro</h4>
+                        <p>The quick brown fox jumps over the lazy dog. A professional sans-serif font with great screen readability.</p>
+                    </div>
+                </div>
+                <div class="font-option" data-font="mono">
+                    <div class="font-preview" style="font-family: 'JetBrains Mono', monospace;">
+                        <h4>JetBrains Mono</h4>
+                        <p>The quick brown fox jumps over the lazy dog. A monospace font for a typewriter-like writing experience.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="font-actions">
+                <button class="btn-secondary" onclick="app.closeFontModal()">Cancel</button>
+                <button class="btn-primary" onclick="app.applySelectedFont()">Apply Font</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="storage.js"></script>
@@ -227,6 +345,7 @@
     <script src="components/outline.js"></script>
     <script src="components/goals.js"></script>
     <script src="components/research.js"></script>
+    <script src="components/ideas.js"></script>
     <script src="components/timeline.js"></script>
     <script src="components/stats.js"></script>
     <script src="app.js"></script>

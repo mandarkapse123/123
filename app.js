@@ -63,6 +63,7 @@ class NovelWriterApp {
             this.components.outline = new OutlineComponent();
             this.components.goals = new GoalsComponent();
             this.components.research = new ResearchComponent();
+            this.components.ideas = new IdeasComponent();
             this.components.timeline = new TimelineComponent();
             this.components.stats = new StatsComponent();
             
@@ -73,6 +74,7 @@ class NovelWriterApp {
             window.outline = this.components.outline;
             window.goals = this.components.goals;
             window.research = this.components.research;
+            window.ideas = this.components.ideas;
             window.timeline = this.components.timeline;
             window.stats = this.components.stats;
             
@@ -112,6 +114,12 @@ class NovelWriterApp {
         const searchBtn = document.getElementById('search-btn');
         if (searchBtn) {
             searchBtn.addEventListener('click', () => this.showGlobalSearch());
+        }
+
+        // Font toggle button
+        const fontToggle = document.getElementById('font-toggle');
+        if (fontToggle) {
+            fontToggle.addEventListener('click', () => this.showFontModal());
         }
 
         // Keyboard shortcuts
@@ -156,9 +164,14 @@ class NovelWriterApp {
         try {
             const savedTheme = await storage.getSetting('theme', 'light');
             this.setTheme(savedTheme);
+
+            // Load font preference
+            const savedFont = await storage.getSetting('writingFont', 'georgia');
+            this.setFont(savedFont);
         } catch (error) {
             console.error('Error loading theme:', error);
             this.setTheme('light');
+            this.setFont('georgia');
         }
     }
 
@@ -828,6 +841,72 @@ class NovelWriterApp {
         if (this.components.writer) {
             this.components.writer.startWordGoalSession(wordGoal);
         }
+    }
+
+    // Font Management
+    showFontModal() {
+        const fontModal = document.getElementById('font-modal');
+        fontModal.classList.remove('hidden');
+
+        // Highlight current font
+        const currentFont = document.documentElement.style.getPropertyValue('--writing-font') || 'georgia';
+        const fontOptions = document.querySelectorAll('.font-option');
+        fontOptions.forEach(option => {
+            option.classList.remove('selected');
+            if (option.dataset.font === currentFont.replace(/['"]/g, '').split(',')[0].toLowerCase()) {
+                option.classList.add('selected');
+            }
+        });
+
+        // Bind click events
+        fontOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                fontOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+    }
+
+    closeFontModal() {
+        const fontModal = document.getElementById('font-modal');
+        fontModal.classList.add('hidden');
+    }
+
+    async applySelectedFont() {
+        const selectedOption = document.querySelector('.font-option.selected');
+        if (selectedOption) {
+            const fontName = selectedOption.dataset.font;
+            this.setFont(fontName);
+
+            try {
+                await storage.setSetting('writingFont', fontName);
+                app.showNotification('Font updated!', 'success');
+            } catch (error) {
+                console.error('Error saving font preference:', error);
+            }
+        }
+        this.closeFontModal();
+    }
+
+    setFont(fontName) {
+        const fontMap = {
+            'georgia': "'Georgia', serif",
+            'times': "'Times New Roman', serif",
+            'libre': "'Libre Baskerville', serif",
+            'crimson': "'Crimson Text', serif",
+            'inter': "'Inter', sans-serif",
+            'source': "'Source Sans Pro', sans-serif",
+            'mono': "'JetBrains Mono', monospace"
+        };
+
+        const fontFamily = fontMap[fontName] || fontMap['georgia'];
+        document.documentElement.style.setProperty('--writing-font', fontFamily);
+
+        // Apply to all writing areas
+        const writingElements = document.querySelectorAll('#main-editor, #ideas-textarea');
+        writingElements.forEach(element => {
+            element.style.fontFamily = fontFamily;
+        });
     }
 
     downloadFile(content, filename, mimeType) {
