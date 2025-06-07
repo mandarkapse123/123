@@ -7,6 +7,11 @@ class WriterComponent {
         this.sessionWordCount = 0;
         this.lastWordCount = 0;
         this.autoSaveInterval = null;
+        this.sessionTimer = null;
+        this.sessionType = null;
+        this.sessionGoal = 0;
+        this.sessionStartWords = 0;
+        this.characterPanelOpen = false;
         this.init();
     }
 
@@ -26,6 +31,11 @@ class WriterComponent {
         this.charCountDisplay = document.getElementById('char-count');
         this.sessionWordsDisplay = document.getElementById('session-words');
         this.saveLocationDisplay = document.getElementById('save-location');
+        this.sessionTimerDisplay = document.getElementById('session-timer');
+        this.sessionTimerBtn = document.getElementById('session-timer-btn');
+        this.characterPanelBtn = document.getElementById('character-panel-btn');
+        this.characterPanel = document.getElementById('character-panel');
+        this.characterList = document.getElementById('character-list');
     }
 
     bindEvents() {
@@ -33,9 +43,15 @@ class WriterComponent {
         this.sceneSelect.addEventListener('change', () => this.onSceneChange());
         this.mainEditor.addEventListener('input', () => this.onTextChange());
         this.mainEditor.addEventListener('keydown', (e) => this.onKeyDown(e));
-        
+
         // Auto-save on blur
         this.mainEditor.addEventListener('blur', () => this.saveCurrentContent());
+
+        // Session timer button
+        this.sessionTimerBtn.addEventListener('click', () => app.showSessionModal());
+
+        // Character panel button
+        this.characterPanelBtn.addEventListener('click', () => this.toggleCharacterPanel());
     }
 
     async loadChapters() {
@@ -377,10 +393,176 @@ Happy writing! ✍️`;
         URL.revokeObjectURL(url);
     }
 
+    // Session Management
+    startTimerSession(minutes) {
+        this.sessionType = 'timer';
+        this.sessionGoal = minutes * 60; // Convert to seconds
+        this.sessionStartTime = new Date();
+        this.sessionStartWords = this.lastWordCount;
+
+        this.sessionTimerBtn.textContent = '⏹️ End Session';
+        this.sessionTimerBtn.classList.add('active');
+        this.sessionTimerDisplay.classList.remove('hidden');
+
+        this.updateTimerDisplay();
+        this.sessionTimer = setInterval(() => {
+            this.updateTimerDisplay();
+        }, 1000);
+    }
+
+    startWordGoalSession(wordGoal) {
+        this.sessionType = 'words';
+        this.sessionGoal = wordGoal;
+        this.sessionStartTime = new Date();
+        this.sessionStartWords = this.lastWordCount;
+
+        this.sessionTimerBtn.textContent = '⏹️ End Session';
+        this.sessionTimerBtn.classList.add('active');
+        this.sessionTimerDisplay.classList.remove('hidden');
+        this.sessionTimerDisplay.textContent = `Goal: ${wordGoal} words`;
+    }
+
+    updateTimerDisplay() {
+        if (this.sessionType !== 'timer') return;
+
+        const elapsed = Math.floor((new Date() - this.sessionStartTime) / 1000);
+        const remaining = Math.max(0, this.sessionGoal - elapsed);
+
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+
+        this.sessionTimerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        // Change color based on time remaining
+        if (remaining <= 300) { // 5 minutes
+            this.sessionTimerDisplay.className = 'session-timer danger';
+        } else if (remaining <= 600) { // 10 minutes
+            this.sessionTimerDisplay.className = 'session-timer warning';
+        } else {
+            this.sessionTimerDisplay.className = 'session-timer';
+        }
+
+        if (remaining === 0) {
+            this.endSession();
+            this.showSessionComplete();
+        }
+    }
+
+    endSession() {
+        if (this.sessionTimer) {
+            clearInterval(this.sessionTimer);
+            this.sessionTimer = null;
+        }
+
+        this.sessionTimerBtn.textContent = '⏱️ Start Session';
+        this.sessionTimerBtn.classList.remove('active');
+        this.sessionTimerDisplay.classList.add('hidden');
+
+        const wordsWritten = this.lastWordCount - this.sessionStartWords;
+        const timeSpent = Math.floor((new Date() - this.sessionStartTime) / 1000);
+
+        // Record session stats
+        if (wordsWritten > 0) {
+            storage.recordWritingSession(wordsWritten, timeSpent);
+        }
+
+        this.sessionType = null;
+        this.sessionGoal = 0;
+    }
+
+    showSessionComplete() {
+        const wordsWritten = this.lastWordCount - this.sessionStartWords;
+        const message = this.sessionType === 'timer'
+            ? `Session complete! You wrote ${wordsWritten} words.`
+            : `Goal achieved! You wrote ${wordsWritten} words.`;
+
+        app.showNotification(message, 'success');
+    }
+
+    // Character Panel Management
+    async toggleCharacterPanel() {
+        this.characterPanelOpen = !this.characterPanelOpen;
+
+        if (this.characterPanelOpen) {
+            this.characterPanel.classList.remove('hidden');
+            this.characterPanelBtn.classList.add('active');
+            await this.loadCharacterPanel();
+        } else {
+            this.characterPanel.classList.add('hidden');
+            this.characterPanelBtn.classList.remove('active');
+        }
+    }
+
+    async loadCharacterPanel() {
+        try {
+            const characters = await storage.getAll('characters');
+
+            if (characters.length === 0) {
+                this.characterList.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        <p>No characters yet.</p>
+                        <p><small>Go to Characters tab to add some!</small></p>
+                    </div>
+                `;
+                return;
+            }
+
+            const charactersHTML = characters.map(char => `
+                <div class="character-quick-ref" onclick="writer.insertCharacterName('${char.name}')">
+                    <h5>${char.name}</h5>
+                    ${char.role ? `<div class="role">${char.role}</div>` : ''}
+                    <div class="description">${char.description || char.personality || 'No description'}</div>
+                </div>
+            `).join('');
+
+            this.characterList.innerHTML = charactersHTML;
+        } catch (error) {
+            console.error('Error loading character panel:', error);
+        }
+    }
+
+    insertCharacterName(name) {
+        const editor = this.mainEditor;
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const value = editor.value;
+
+        editor.value = value.substring(0, start) + name + value.substring(end);
+        editor.selectionStart = editor.selectionEnd = start + name.length;
+        editor.focus();
+        this.onTextChange();
+    }
+
+    // Search result navigation
+    async loadSearchResult(category, id) {
+        try {
+            if (category === 'chapters') {
+                const chapter = await storage.get('chapters', id);
+                if (chapter) {
+                    this.chapterSelect.value = chapter.id;
+                    await this.onChapterChange();
+                }
+            } else if (category === 'scenes') {
+                const scene = await storage.get('scenes', id);
+                if (scene) {
+                    this.chapterSelect.value = scene.chapterId;
+                    await this.onChapterChange();
+                    this.sceneSelect.value = scene.id;
+                    await this.onSceneChange();
+                }
+            }
+        } catch (error) {
+            console.error('Error loading search result:', error);
+        }
+    }
+
     // Cleanup
     destroy() {
         if (this.autoSaveInterval) {
             clearInterval(this.autoSaveInterval);
+        }
+        if (this.sessionTimer) {
+            clearInterval(this.sessionTimer);
         }
     }
 }

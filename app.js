@@ -108,6 +108,12 @@ class NovelWriterApp {
             exportBtn.addEventListener('click', () => this.showExportModal());
         }
 
+        // Search button
+        const searchBtn = document.getElementById('search-btn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => this.showGlobalSearch());
+        }
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
 
@@ -218,6 +224,10 @@ class NovelWriterApp {
                 case 'e':
                     e.preventDefault();
                     this.showExportModal();
+                    break;
+                case '/':
+                    e.preventDefault();
+                    this.showGlobalSearch();
                     break;
             }
         }
@@ -589,6 +599,235 @@ class NovelWriterApp {
         }
 
         return novelText;
+    }
+
+    // Global Search Functionality
+    showGlobalSearch() {
+        const searchModal = document.getElementById('search-modal');
+        const searchInput = document.getElementById('search-input');
+
+        searchModal.classList.remove('hidden');
+        searchInput.focus();
+
+        // Bind search events
+        searchInput.addEventListener('input', this.performSearch.bind(this));
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeSearch();
+            }
+        });
+    }
+
+    closeSearch() {
+        const searchModal = document.getElementById('search-modal');
+        searchModal.classList.add('hidden');
+
+        // Clear search
+        document.getElementById('search-input').value = '';
+        document.getElementById('search-results').innerHTML = `
+            <div class="search-placeholder">
+                Type to search across chapters, scenes, characters, and notes...
+            </div>
+        `;
+    }
+
+    async performSearch() {
+        const query = document.getElementById('search-input').value.trim();
+        const resultsContainer = document.getElementById('search-results');
+
+        if (query.length < 2) {
+            resultsContainer.innerHTML = `
+                <div class="search-placeholder">
+                    Type at least 2 characters to search...
+                </div>
+            `;
+            return;
+        }
+
+        try {
+            const data = await storage.exportData();
+            const results = [];
+
+            // Search chapters
+            (data.chapters || []).forEach(chapter => {
+                if (this.matchesQuery(chapter.title, query) || this.matchesQuery(chapter.content, query)) {
+                    results.push({
+                        type: 'Chapter',
+                        title: chapter.title,
+                        content: this.getSearchSnippet(chapter.content || chapter.title, query),
+                        id: chapter.id,
+                        category: 'chapters'
+                    });
+                }
+            });
+
+            // Search scenes
+            (data.scenes || []).forEach(scene => {
+                if (this.matchesQuery(scene.title, query) || this.matchesQuery(scene.content, query)) {
+                    const chapter = (data.chapters || []).find(c => c.id === scene.chapterId);
+                    results.push({
+                        type: 'Scene',
+                        title: `${chapter?.title || 'Unknown'} > ${scene.title}`,
+                        content: this.getSearchSnippet(scene.content || scene.title, query),
+                        id: scene.id,
+                        category: 'scenes'
+                    });
+                }
+            });
+
+            // Search characters
+            (data.characters || []).forEach(character => {
+                const searchText = `${character.name} ${character.description} ${character.personality} ${character.background}`;
+                if (this.matchesQuery(searchText, query)) {
+                    results.push({
+                        type: 'Character',
+                        title: character.name,
+                        content: character.description || character.personality || 'Character profile',
+                        id: character.id,
+                        category: 'characters'
+                    });
+                }
+            });
+
+            // Search research
+            (data.research || []).forEach(note => {
+                const searchText = `${note.title} ${note.content} ${note.tags}`;
+                if (this.matchesQuery(searchText, query)) {
+                    results.push({
+                        type: 'Research',
+                        title: note.title,
+                        content: this.getSearchSnippet(note.content, query),
+                        id: note.id,
+                        category: 'research'
+                    });
+                }
+            });
+
+            this.displaySearchResults(results, query);
+        } catch (error) {
+            console.error('Search error:', error);
+            resultsContainer.innerHTML = `
+                <div class="search-placeholder">
+                    Error performing search. Please try again.
+                </div>
+            `;
+        }
+    }
+
+    matchesQuery(text, query) {
+        if (!text) return false;
+        return text.toLowerCase().includes(query.toLowerCase());
+    }
+
+    getSearchSnippet(text, query, maxLength = 150) {
+        if (!text) return '';
+
+        const lowerText = text.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        const index = lowerText.indexOf(lowerQuery);
+
+        if (index === -1) return text.substring(0, maxLength) + '...';
+
+        const start = Math.max(0, index - 50);
+        const end = Math.min(text.length, index + query.length + 50);
+
+        let snippet = text.substring(start, end);
+        if (start > 0) snippet = '...' + snippet;
+        if (end < text.length) snippet = snippet + '...';
+
+        // Highlight the query
+        const regex = new RegExp(`(${query})`, 'gi');
+        snippet = snippet.replace(regex, '<span class="search-highlight">$1</span>');
+
+        return snippet;
+    }
+
+    displaySearchResults(results, query) {
+        const resultsContainer = document.getElementById('search-results');
+
+        if (results.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="search-placeholder">
+                    No results found for "${query}"
+                </div>
+            `;
+            return;
+        }
+
+        const resultsHTML = results.map(result => `
+            <div class="search-result" onclick="app.goToSearchResult('${result.category}', ${result.id})">
+                <div class="search-result-header">
+                    <span class="search-result-title">${result.title}</span>
+                    <span class="search-result-type">${result.type}</span>
+                </div>
+                <div class="search-result-content">${result.content}</div>
+            </div>
+        `).join('');
+
+        resultsContainer.innerHTML = `
+            <div style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                Found ${results.length} result${results.length !== 1 ? 's' : ''} for "${query}"
+            </div>
+            ${resultsHTML}
+        `;
+    }
+
+    goToSearchResult(category, id) {
+        this.closeSearch();
+
+        switch (category) {
+            case 'chapters':
+            case 'scenes':
+                this.showView('writer');
+                // Let the writer component handle loading the specific content
+                if (this.components.writer) {
+                    this.components.writer.loadSearchResult(category, id);
+                }
+                break;
+            case 'characters':
+                this.showView('characters');
+                break;
+            case 'research':
+                this.showView('research');
+                break;
+        }
+    }
+
+    // Session Management
+    showSessionModal() {
+        const sessionModal = document.getElementById('session-modal');
+        sessionModal.classList.remove('hidden');
+    }
+
+    closeSessionModal() {
+        const sessionModal = document.getElementById('session-modal');
+        sessionModal.classList.add('hidden');
+    }
+
+    startWritingSession() {
+        const sessionType = document.querySelector('input[name="session-type"]:checked').value;
+
+        if (sessionType === 'time') {
+            const duration = parseInt(document.getElementById('time-duration').value);
+            this.startTimerSession(duration);
+        } else {
+            const wordGoal = parseInt(document.getElementById('word-goal').value) || 500;
+            this.startWordGoalSession(wordGoal);
+        }
+
+        this.closeSessionModal();
+    }
+
+    startTimerSession(minutes) {
+        if (this.components.writer) {
+            this.components.writer.startTimerSession(minutes);
+        }
+    }
+
+    startWordGoalSession(wordGoal) {
+        if (this.components.writer) {
+            this.components.writer.startWordGoalSession(wordGoal);
+        }
     }
 
     downloadFile(content, filename, mimeType) {

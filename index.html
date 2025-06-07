@@ -26,6 +26,7 @@
                 <button class="nav-btn" data-view="stats">Stats</button>
             </div>
             <div class="nav-controls">
+                <button id="search-btn" class="icon-btn" title="Global Search">🔍</button>
                 <button id="theme-toggle" class="icon-btn" title="Toggle Theme">🌙</button>
                 <button id="focus-mode" class="icon-btn" title="Focus Mode">🎯</button>
                 <button id="export-btn" class="icon-btn" title="Export">📤</button>
@@ -49,13 +50,27 @@
                                 💾 Create a chapter first to save your work
                             </div>
                         </div>
+                        <div class="writer-controls">
+                            <button id="session-timer-btn" class="control-btn" title="Start Writing Session">⏱️ Start Session</button>
+                            <button id="character-panel-btn" class="control-btn" title="Character Reference">👥 Characters</button>
+                        </div>
                         <div class="writer-stats">
                             <span id="word-count">0 words</span>
                             <span id="char-count">0 chars</span>
                             <span id="session-words">Session: 0</span>
+                            <span id="session-timer" class="session-timer hidden">25:00</span>
                         </div>
                     </div>
                     <div class="writing-area">
+                        <div id="character-panel" class="character-panel hidden">
+                            <div class="panel-header">
+                                <h4>📚 Character Reference</h4>
+                                <button class="close-panel" onclick="writer.toggleCharacterPanel()">✕</button>
+                            </div>
+                            <div id="character-list" class="character-list">
+                                <!-- Characters will be loaded here -->
+                            </div>
+                        </div>
                         <textarea id="main-editor" placeholder="Start writing your story..."></textarea>
                     </div>
                 </div>
@@ -155,6 +170,53 @@
 
     <!-- Modal Container -->
     <div id="modal-container"></div>
+
+    <!-- Global Search Modal -->
+    <div id="search-modal" class="search-modal hidden">
+        <div class="search-container">
+            <div class="search-header">
+                <input type="text" id="search-input" placeholder="Search across all content..." autofocus>
+                <button class="close-search" onclick="app.closeSearch()">✕</button>
+            </div>
+            <div class="search-results" id="search-results">
+                <div class="search-placeholder">
+                    Type to search across chapters, scenes, characters, and notes...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Goal Modal -->
+    <div id="session-modal" class="session-modal hidden">
+        <div class="session-container">
+            <h3>🎯 Start Writing Session</h3>
+            <div class="session-options">
+                <div class="goal-option">
+                    <label>
+                        <input type="radio" name="session-type" value="time" checked>
+                        ⏰ Time-based (Pomodoro)
+                    </label>
+                    <select id="time-duration">
+                        <option value="25">25 minutes</option>
+                        <option value="15">15 minutes</option>
+                        <option value="45">45 minutes</option>
+                        <option value="60">1 hour</option>
+                    </select>
+                </div>
+                <div class="goal-option">
+                    <label>
+                        <input type="radio" name="session-type" value="words">
+                        📝 Word count goal
+                    </label>
+                    <input type="number" id="word-goal" placeholder="500" min="50" step="50">
+                </div>
+            </div>
+            <div class="session-actions">
+                <button class="btn-secondary" onclick="app.closeSessionModal()">Cancel</button>
+                <button class="btn-primary" onclick="app.startWritingSession()">Start Session</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
