@@ -25,6 +25,7 @@ class WriterComponent {
         this.wordCountDisplay = document.getElementById('word-count');
         this.charCountDisplay = document.getElementById('char-count');
         this.sessionWordsDisplay = document.getElementById('session-words');
+        this.saveLocationDisplay = document.getElementById('save-location');
     }
 
     bindEvents() {
@@ -41,15 +42,20 @@ class WriterComponent {
         try {
             const chapters = await storage.getChapters();
             this.populateChapterSelect(chapters);
-            
+
+            // Show helpful message if no chapters exist
+            if (chapters.length === 0) {
+                this.showNoChaptersMessage();
+            }
+
             // Load last selected chapter/scene
             const lastChapter = await storage.getSetting('lastSelectedChapter');
             const lastScene = await storage.getSetting('lastSelectedScene');
-            
+
             if (lastChapter) {
                 this.chapterSelect.value = lastChapter;
                 await this.onChapterChange();
-                
+
                 if (lastScene) {
                     this.sceneSelect.value = lastScene;
                     await this.onSceneChange();
@@ -57,7 +63,24 @@ class WriterComponent {
             }
         } catch (error) {
             console.error('Error loading chapters:', error);
+            this.showNoChaptersMessage();
         }
+    }
+
+    showNoChaptersMessage() {
+        this.mainEditor.value = `Welcome to Novel Writer! 📖
+
+To get started:
+1. Go to the "Organize" tab to create your first chapter
+2. Come back here to start writing
+3. Select your chapter and scene from the dropdowns above
+4. Your work will auto-save every 30 seconds
+
+You can also write directly here, and this content will be saved to your selected chapter.
+
+Happy writing! ✍️`;
+        this.mainEditor.style.fontStyle = 'italic';
+        this.mainEditor.style.color = 'var(--text-secondary)';
     }
 
     populateChapterSelect(chapters) {
@@ -84,15 +107,22 @@ class WriterComponent {
             this.currentChapter = await storage.get('chapters', chapterId);
             const scenes = await storage.getScenesByChapter(chapterId);
             this.populateSceneSelect(scenes);
-            
+
+            // Clear welcome message styling
+            this.clearWelcomeMessage();
+
             // Save selection
             await storage.setSetting('lastSelectedChapter', chapterId);
-            
+
             // If no scenes, show chapter content
             if (scenes.length === 0) {
                 this.mainEditor.value = this.currentChapter.content || '';
+                this.mainEditor.placeholder = `Writing in: ${this.currentChapter.title}`;
                 this.updateWordCount();
             }
+
+            // Update save location indicator
+            this.updateSaveLocation();
         } catch (error) {
             console.error('Error loading chapter:', error);
         }
@@ -114,19 +144,48 @@ class WriterComponent {
             this.currentScene = null;
             // Show chapter content if no scene selected
             this.mainEditor.value = this.currentChapter?.content || '';
+            this.mainEditor.placeholder = this.currentChapter ? `Writing in: ${this.currentChapter.title}` : 'Start writing your story...';
             this.updateWordCount();
             return;
         }
 
         try {
             this.currentScene = await storage.get('scenes', sceneId);
+
+            // Clear welcome message styling
+            this.clearWelcomeMessage();
+
             this.mainEditor.value = this.currentScene.content || '';
+            this.mainEditor.placeholder = `Writing in: ${this.currentChapter.title} > ${this.currentScene.title}`;
             this.updateWordCount();
-            
+
             // Save selection
             await storage.setSetting('lastSelectedScene', sceneId);
+
+            // Update save location indicator
+            this.updateSaveLocation();
         } catch (error) {
             console.error('Error loading scene:', error);
+        }
+    }
+
+    clearWelcomeMessage() {
+        this.mainEditor.style.fontStyle = 'normal';
+        this.mainEditor.style.color = 'var(--text-primary)';
+    }
+
+    updateSaveLocation() {
+        if (!this.saveLocationDisplay) return;
+
+        if (this.currentScene) {
+            this.saveLocationDisplay.textContent = `💾 Saving to: ${this.currentChapter.title} > ${this.currentScene.title}`;
+            this.saveLocationDisplay.className = 'save-location active';
+        } else if (this.currentChapter) {
+            this.saveLocationDisplay.textContent = `💾 Saving to: ${this.currentChapter.title}`;
+            this.saveLocationDisplay.className = 'save-location active';
+        } else {
+            this.saveLocationDisplay.textContent = '💾 Create a chapter first to save your work';
+            this.saveLocationDisplay.className = 'save-location';
         }
     }
 

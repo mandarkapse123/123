@@ -38,12 +38,17 @@
             <div id="writer-view" class="view active">
                 <div class="writer-container">
                     <div class="writer-header">
-                        <select id="chapter-select" class="chapter-selector">
-                            <option value="">Select Chapter</option>
-                        </select>
-                        <select id="scene-select" class="scene-selector">
-                            <option value="">Select Scene</option>
-                        </select>
+                        <div class="writer-selectors">
+                            <select id="chapter-select" class="chapter-selector">
+                                <option value="">Select Chapter</option>
+                            </select>
+                            <select id="scene-select" class="scene-selector">
+                                <option value="">Select Scene</option>
+                            </select>
+                            <div class="save-location" id="save-location">
+                                💾 Create a chapter first to save your work
+                            </div>
+                        </div>
                         <div class="writer-stats">
                             <span id="word-count">0 words</span>
                             <span id="char-count">0 chars</span>

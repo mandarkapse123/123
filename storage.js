@@ -68,41 +68,81 @@ class NovelStorage {
 
     // Generic CRUD operations
     async add(storeName, data) {
-        const transaction = this.db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-        return store.add(data);
+        try {
+            if (!this.db) {
+                return this.addToLocalStorage(storeName, data);
+            }
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            return store.add(data);
+        } catch (error) {
+            console.warn('IndexedDB add failed, using localStorage:', error);
+            return this.addToLocalStorage(storeName, data);
+        }
     }
 
     async update(storeName, data) {
-        const transaction = this.db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-        return store.put(data);
+        try {
+            if (!this.db) {
+                return this.updateInLocalStorage(storeName, data);
+            }
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            return store.put(data);
+        } catch (error) {
+            console.warn('IndexedDB update failed, using localStorage:', error);
+            return this.updateInLocalStorage(storeName, data);
+        }
     }
 
     async delete(storeName, id) {
-        const transaction = this.db.transaction([storeName], 'readwrite');
-        const store = transaction.objectStore(storeName);
-        return store.delete(id);
+        try {
+            if (!this.db) {
+                return this.deleteFromLocalStorage(storeName, id);
+            }
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            return store.delete(id);
+        } catch (error) {
+            console.warn('IndexedDB delete failed, using localStorage:', error);
+            return this.deleteFromLocalStorage(storeName, id);
+        }
     }
 
     async get(storeName, id) {
-        const transaction = this.db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        return new Promise((resolve, reject) => {
-            const request = store.get(id);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
+        try {
+            if (!this.db) {
+                return this.getFromLocalStorage(storeName, id);
+            }
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.get(id);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.warn('IndexedDB get failed, using localStorage:', error);
+            return this.getFromLocalStorage(storeName, id);
+        }
     }
 
     async getAll(storeName) {
-        const transaction = this.db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        return new Promise((resolve, reject) => {
-            const request = store.getAll();
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
+        try {
+            if (!this.db) {
+                return this.getAllFromLocalStorage(storeName);
+            }
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            return new Promise((resolve, reject) => {
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        } catch (error) {
+            console.warn('IndexedDB getAll failed, using localStorage:', error);
+            return this.getAllFromLocalStorage(storeName);
+        }
     }
 
     async getAllByIndex(storeName, indexName, value) {
@@ -225,11 +265,74 @@ class NovelStorage {
         }
     }
 
+    // LocalStorage fallback methods
+    getLocalStorageData() {
+        const data = localStorage.getItem('novelWriterData');
+        return data ? JSON.parse(data) : {};
+    }
+
+    setLocalStorageData(data) {
+        localStorage.setItem('novelWriterData', JSON.stringify(data));
+    }
+
+    addToLocalStorage(storeName, data) {
+        const allData = this.getLocalStorageData();
+        if (!allData[storeName]) allData[storeName] = [];
+
+        // Generate ID if not present
+        if (!data.id) {
+            data.id = Date.now() + Math.random();
+        }
+
+        allData[storeName].push(data);
+        this.setLocalStorageData(allData);
+        return Promise.resolve(data);
+    }
+
+    updateInLocalStorage(storeName, data) {
+        const allData = this.getLocalStorageData();
+        if (!allData[storeName]) allData[storeName] = [];
+
+        const index = allData[storeName].findIndex(item => item.id === data.id);
+        if (index >= 0) {
+            allData[storeName][index] = data;
+        } else {
+            allData[storeName].push(data);
+        }
+
+        this.setLocalStorageData(allData);
+        return Promise.resolve(data);
+    }
+
+    deleteFromLocalStorage(storeName, id) {
+        const allData = this.getLocalStorageData();
+        if (!allData[storeName]) return Promise.resolve();
+
+        allData[storeName] = allData[storeName].filter(item => item.id !== id);
+        this.setLocalStorageData(allData);
+        return Promise.resolve();
+    }
+
+    getFromLocalStorage(storeName, id) {
+        const allData = this.getLocalStorageData();
+        if (!allData[storeName]) return Promise.resolve(null);
+
+        const item = allData[storeName].find(item => item.id === id);
+        return Promise.resolve(item || null);
+    }
+
+    getAllFromLocalStorage(storeName) {
+        const allData = this.getLocalStorageData();
+        return Promise.resolve(allData[storeName] || []);
+    }
+
     // Backup to localStorage as fallback
     backupToLocalStorage() {
-        this.exportData().then(data => {
-            localStorage.setItem('novelWriterBackup', JSON.stringify(data));
-        });
+        if (this.db) {
+            this.exportData().then(data => {
+                localStorage.setItem('novelWriterBackup', JSON.stringify(data));
+            });
+        }
     }
 
     restoreFromLocalStorage() {
@@ -247,9 +350,14 @@ const storage = new NovelStorage();
 
 // Auto-backup every 5 minutes
 setInterval(() => {
-    storage.backupToLocalStorage();
+    if (storage.db) {
+        storage.backupToLocalStorage();
+    }
 }, 5 * 60 * 1000);
 
 // Export for use in other modules
 window.NovelStorage = NovelStorage;
 window.storage = storage;
+
+// Storage ready promise
+window.storageReady = storage.init();

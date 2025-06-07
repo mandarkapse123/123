@@ -139,10 +139,18 @@ body {
 .writer-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
     margin-bottom: 1rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
+}
+
+.writer-selectors {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
 }
 
 .chapter-selector, .scene-selector {
@@ -154,8 +162,22 @@ body {
     min-width: 150px;
 }
 
+.save-location {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0.5rem;
+    background-color: var(--bg-tertiary);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.save-location.active {
+    color: var(--success-color);
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: var(--success-color);
+}
+
 .writer-stats {
-    margin-left: auto;
     display: flex;
     gap: 1rem;
     font-size: 0.9rem;

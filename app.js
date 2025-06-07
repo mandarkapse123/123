@@ -26,16 +26,32 @@ class NovelWriterApp {
     }
 
     async waitForStorage() {
-        // Wait for storage to be ready
-        let attempts = 0;
-        while (!window.storage && attempts < 50) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-        }
-        
-        if (!window.storage) {
-            console.error('Storage failed to initialize');
-            alert('Failed to initialize storage. Some features may not work properly.');
+        try {
+            // Wait for storage to be ready
+            if (window.storageReady) {
+                await window.storageReady;
+            } else {
+                // Fallback: wait for storage object
+                let attempts = 0;
+                while (!window.storage?.db && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+            }
+
+            if (!window.storage?.db) {
+                console.error('Storage failed to initialize');
+                // Try to restore from localStorage as fallback
+                if (window.storage) {
+                    await window.storage.restoreFromLocalStorage();
+                }
+                throw new Error('Storage initialization failed');
+            }
+
+            console.log('Storage initialized successfully');
+        } catch (error) {
+            console.error('Storage error:', error);
+            alert('Failed to initialize storage. Some features may not work properly. Your data will be saved to browser storage as a fallback.');
         }
     }
 
