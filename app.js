@@ -1239,3 +1239,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Make app globally accessible
 window.NovelWriterApp = NovelWriterApp;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function updateGoalProgress(current, goal) {
+    const fill = document.querySelector('.goal-progress-fill');
+    const percent = Math.min(100, (current / goal) * 100);
+    fill.style.width = percent + '%';
+}
+
+
+
+document.getElementById('font-selector').addEventListener('change', function(e) {
+    document.getElementById('main-editor').style.fontFamily = e.target.value;
+});
+
+
+
+
+const items = document.querySelectorAll('.tree-node');
+items.forEach(item => {
+    item.draggable = true;
+    item.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', item.id);
+    });
+    item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+    item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const draggedId = e.dataTransfer.getData('text/plain');
+        const draggedElem = document.getElementById(draggedId);
+        item.parentNode.insertBefore(draggedElem, item);
+    });
+});
+
+
+
+
+
+
+
+function showMilestoneBadge(text) {
+    const badge = document.getElementById('milestone-badge');
+    badge.textContent = text;
+    badge.classList.add('show');
+    setTimeout(() => badge.classList.remove('show'), 3000);
+}
+
+// Example usage in your word count logic:
+const milestones = [1000, 5000, 10000];
+let lastMilestone = 0;
+function checkMilestones(wordCount) {
+    for (const m of milestones) {
+        if (wordCount >= m && lastMilestone < m) {
+            showMilestoneBadge(`🎉 ${m} words!`);
+            lastMilestone = m;
+        }
+    }
+}
