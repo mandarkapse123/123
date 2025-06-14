@@ -164,7 +164,7 @@ body {
 /* Main Content */
 #main-content {
     height: calc(100vh - 80px);
-    overflow: hidden;
+    overflow-y: auto; /* enables vertical scroll */
 }
 
 .view {
