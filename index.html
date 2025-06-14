@@ -47,8 +47,16 @@
         <main id="main-content">
             <!-- Writer View -->
             <div id="writer-view" class="view active">
+                <div id="milestone-badge" class="milestone-badge hidden"></div>
                 <div class="writer-container">
                     <div class="writer-header">
+                        <!-- Place this where you want the font selector, e.g., in .writer-header -->
+<select id="font-selector">
+    <option value="Georgia">Georgia</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Inter">Inter</option>
+    <option value="JetBrains Mono">JetBrains Mono</option>
+</select>
                         <div class="writer-selectors">
                             <select id="chapter-select" class="chapter-selector">
                                 <option value="">Select Chapter</option>
@@ -57,6 +65,9 @@
                                 <option value="">Select Scene</option>
                             </select>
                             <div class="save-location" id="save-location">
+                                <div id="writing-goal-progress" class="goal-progress-bar">
+    <div class="goal-progress-fill" style="width: 0%"></div>
+</div>
                                 💾 Create a chapter first to save your work
                             </div>
                         </div>
